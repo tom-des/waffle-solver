@@ -2,15 +2,6 @@
     box-sizing: border-box;
 }
 
-/* Make inputs look normal on iOS */
-input {
-    font: inherit;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 0;
-}
-
 h1 {
     text-align: center;
     font-size: 50px;
@@ -49,6 +40,12 @@ body {
 
 
 .tile {
+    font: inherit;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    
     text-transform: uppercase;
     text-align: center;
     font-family: 'Courier New', Courier, monospace;
