@@ -1,6 +1,3 @@
-//TODO: Non-intersecting yellow letters are only available in that word.
-// So each word needs its own avail letters where this is accounted for. 
-
 let solveButtonElem = document.querySelector('#solve-button')
 solveButtonElem.addEventListener('click', updateGame)
 window.addEventListener('keydown', function (e) {
@@ -360,6 +357,8 @@ function solveThePuzzle() {
         }
 
         // Set initial available letters to the gray and yellow letters on the board
+        //TODO: Non-intersecting yellow letters are only available in that word.
+        // So each word needs its own avail letters where this is accounted for. 
         let availLetters = [...getColorLettersFromBoard('gray'), ...getColorLettersFromBoard('yellow')]
         availLetters = availLetters.map(tile => tile[0])
         // Set availLetters to the puzzleWord object
@@ -426,6 +425,7 @@ function solveThePuzzle() {
     ///////////////////////////////////
     // Round 2 Solving
     // Use new information from prevous round one solving to update the word list
+    ///////////////////////////////////
 
     function solverRound2(theseWords, theseAvailLetters) {
 
@@ -482,7 +482,7 @@ function solveThePuzzle() {
             }
         }
         console.log(`✅ end of solver-2 (first).js`)
-
+        ///////////////////////////////////
         // Begin formerly round 3, now 2.1
 
         for (let word of round2Words) {
@@ -582,6 +582,8 @@ function solveThePuzzle() {
 
     ////////////////////////////
     // Round 3
+    // Generate every possible combination using dictionary words
+    // Remove any combinations that don't match the board letter and layout
     ////////////////////////////
 
     function solverRound3(words) {
@@ -610,7 +612,6 @@ function solveThePuzzle() {
 
         // Remove non-intersecting letters and transpose cols into rows for comparison
         function processSolutions(possibleSolutions) {
-
             let thesePossibleSolutions = []
             for (let i = 0; i < possibleSolutions.length; i++) {
                 let theseRows = []
@@ -731,7 +732,6 @@ function solveThePuzzle() {
         let finalCols = []
         for (let i = 0; i < theSolution.length; i++) {
             let solutionWord = theSolution[i]
-
             solutionWord = solutionWord.split('')
             if (i < theSolution.length / 2) {
                 finalRows.push(solutionWord)
@@ -754,7 +754,6 @@ function solveThePuzzle() {
             }
         }
         finalCols = transpose(finalCols)
-
         for (let i = 0; i < finalRows.length - 1; i++) {
             let row = finalRows[i]
             row.forEach((letter, index) => {
@@ -762,9 +761,7 @@ function solveThePuzzle() {
                     row[index] = finalCols[i][index]
                 }
             })
-
         }
-
         return finalRows
     }
 
@@ -783,7 +780,7 @@ function solveThePuzzle() {
         }
 
     }
-    inputs = document.querySelectorAll('.tile');
+    let inputs = document.querySelectorAll('.tile');
     inputs.forEach((input) => input.removeEventListener('click', changeColor));
     solveButtonElem.style.display = 'none'
     return finalRows
@@ -812,11 +809,10 @@ function changeColor() {
     }
 }
 
-inputs = document.querySelectorAll('.tile');
+let inputs = document.querySelectorAll('.tile');
 inputs.forEach((input) => input.addEventListener('click', changeColor));
 
 function updateGame() {
-
     tiles = document.querySelectorAll('.tile')
     let newRowsRow = []
     let newColorsRow = []
@@ -825,7 +821,6 @@ function updateGame() {
     for (let i = 0; i < tiles.length; i++) {
         let tile = tiles[i]
         tile.value = tile.value.toUpperCase()
-
         if (tile.style.color !== 'black') {
             newRowsRow.push(tile.value)
             newColorsRow.push(tile.dataset.color)
@@ -838,9 +833,7 @@ function updateGame() {
             updateColors.push(newColorsRow)
             newRowsRow = []
             newColorsRow = []
-
         }
-
     }
     console.log(`updatedRows`, updatedRows)
     console.log(`updatedColors`, updateColors)
@@ -849,32 +842,28 @@ function updateGame() {
     words = createWords(updatedRows, updateColors, filteredDictionary)
     newGameboard = createLetterObjects(updatedRows, updateColors, false, words, true)
     let finalRows = solveThePuzzle(updatedRows, updateColors)
-    logOutSteps(initialRows, finalRows)
+    figureOutStepsAndPrint(initialRows, finalRows)
 }
 
-
-// Figure out the fewest possible steps to solve the puzzle
-function logOutSteps(initialRows, finalRows) {
-
+////////////////////////////////////////////////////////////////////////
+// Section to deal with figuring out steps after solution is found
+// Figure out the fewest possible steps to solve the puzzle and print out
+////////////////////////////////////////////////////////////////////////
+function figureOutStepsAndPrint(initialRows, finalRows) {
     let steps = []
     let problem = initialRows
     let solution = finalRows
     let problemRow = problem.reduce((acc, row) => acc.concat(row), [])
     let solutionRow = solution.reduce((acc, row) => acc.concat(row), [])
-    let g2g = 0
-    let iterations = 0
 
     function addStep(i, j, problemLetter, potentialSolutionLetter) {
-
         rowLength = initialRows.length
-
         let solutionRow = Math.floor((i + rowLength) / rowLength)
         let solutionCol = (i + rowLength + 1) % rowLength === 0 ? rowLength : (i + rowLength + 1) % rowLength
         let problemRow = Math.floor((j + rowLength) / rowLength)
         let problemCol = (j + rowLength + 1) % rowLength === 0 ? rowLength : (j + rowLength + 1) % rowLength
         let stepString = `Swap ${potentialSolutionLetter} with ${problemLetter} (${problemRow},${problemCol} to ${solutionRow},${solutionCol})`
         steps.push({ solutionCol, solutionRow, problemCol, problemRow, stepString })
-
     }
 
     function doSwapping(problemRow) {
@@ -892,8 +881,6 @@ function logOutSteps(initialRows, finalRows) {
                 }
                 if (solutionLetter === potentialSolutionLetter && problemLetter === thePotentialCounterpart) {
                     addStep(i, j, problemLetter, potentialSolutionLetter)
-                    iterations++
-                    g2g++
                     problemRow[j] = problemLetter
                     problemRow[i] = solutionLetter
                     break
@@ -918,8 +905,6 @@ function logOutSteps(initialRows, finalRows) {
                 }
                 if (solutionLetter === potentialSolutionLetter && problemLetter === thePotentialCounterpart) {
                     addStep(i, j, problemLetter, potentialSolutionLetter)
-                    iterations++
-                    g2g++
                     problemRow[j] = problemLetter
                     problemRow[i] = potentialSolutionLetter
                     break
@@ -930,7 +915,6 @@ function logOutSteps(initialRows, finalRows) {
                     temp[i] = potentialSolutionLetter
                     temp = checkIfNextIsGreenToGreen(temp)
                     if (temp) {
-                        iterations++
                         addStep(i, j, problemLetter, potentialSolutionLetter)
                         let lastStep = steps.pop()
                         let secondLastStep = steps.pop()
@@ -972,9 +956,7 @@ function logOutSteps(initialRows, finalRows) {
                 if (potentialSolutionLetter === solutionLetter && problemLetter === thePotentialCounterpart) {
                     thisProblemRow[j] = problemLetter
                     thisProblemRow[i] = solutionLetter
-                    addStep(i, j, problemLetter, potentialSolutionLetter, 'NG')
-                    g2g++
-                    iterations++
+                    addStep(i, j, problemLetter, potentialSolutionLetter)
                     return thisProblemRow
                 }
             }
@@ -982,7 +964,6 @@ function logOutSteps(initialRows, finalRows) {
     }
 
     // Print out swapping instructions
-
     doSwapping(problemRow)
     steps.forEach((step, index) => console.log((index + 1) + '. ' + step.stepString))
 
@@ -1016,15 +997,7 @@ function logOutSteps(initialRows, finalRows) {
 }
 
 function colorWord(e) {
-    //if event type was click
     let elem = e.target
-    if (e.type === 'mouseleave' && elem.dataset.clicked === "true") {
-        return
-    }
-    if (e.type === 'mouseover' && elem.dataset.clicked === "true") {
-        return
-    }
-
     problemRow = elem.dataset.problemRow
     problemCol = elem.dataset.problemCol
     let targetProblemTile = document.querySelector(`[data-row="${problemRow - 1}"][data-col="${problemCol - 1}"]`)
