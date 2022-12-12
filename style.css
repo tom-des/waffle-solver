@@ -40,12 +40,13 @@ body {
 
 
 .tile {
+    padding: 0px;
     font: inherit;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     border-radius: 0;
-    
+
     text-transform: uppercase;
     text-align: center;
     font-family: 'Courier New', Courier, monospace;
